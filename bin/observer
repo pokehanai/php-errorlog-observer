@@ -33,3 +33,4 @@ if (0 < limit && 0 < interval) {
 
 // observe
 require('../lib/observe')(program.path, program.key);
+console.log("Start observing.\n  path: " + program.path + "\n  key:  " + program.key);
