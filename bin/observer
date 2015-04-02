@@ -10,7 +10,6 @@ program
     .option('-k, --key      <string>', 'Redis key to store error log records [php:errorlog]', 'php:errorlog')
     .option('-r, --refresh', 'Refresh Redis list(Discard and populate Redis list) [false]')
     .option('-l, --limit    <int>', 'max entries of Redis list. exceeded entries will be purged. [0(no limit)]', '0')
-    .option('-t, --interval <int> ', 'interval milli seconds to purge Redis list. [1000]', '1000')
     .description('start observing PHP error log, and stores log records to redis key')
     .parse(process.argv);
 
@@ -19,18 +18,18 @@ if (program.path == '' || program.key == '') {
     process.exit(1);
 }
 
+var limit = parseInt(program.limit);
+limit = (0 < limit) ? limit : 0;
+
 // refresh
 if (program.refresh) {
-    require('../lib/refresh')(program.path, program.key);
-}
-
-// purge
-var limit = parseInt(program.limit);
-var interval = parseInt(program.interval);
-if (0 < limit && 0 < interval) {
-    require('../lib/purge')(program.key, limit, interval);
+    require('../lib/refresh')(program.path, program.key, limit);
 }
 
 // observe
-require('../lib/observe')(program.path, program.key);
-console.log("Start observing.\n  path: " + program.path + "\n  key:  " + program.key);
+require('../lib/observe')(program.path, program.key, limit);
+
+console.log('Start observing.');
+console.log('path:  ' + program.path);
+console.log('key:   ' + program.key);
+console.log('limit: ' + (limit || 'no limit'));
