@@ -7,6 +7,7 @@ var program  = require('commander');
 program
     .version(pjson.version)
     .option('-p, --path     <path>', 'path to PHP error log [/tmp/php_error.log]', '/tmp/php_error.log')
+    .option('-n, --db       <int>', 'Redis database number [0]', '0')
     .option('-k, --key      <string>', 'Redis key to store error log records [php:errorlog]', 'php:errorlog')
     .option('-r, --refresh', 'Refresh Redis list(Discard and populate Redis list) [false]')
     .option('-l, --limit    <int>', 'max entries of Redis list. exceeded entries will be purged. [0(no limit)]', '0')
@@ -21,15 +22,20 @@ if (program.path == '' || program.key == '') {
 var limit = parseInt(program.limit);
 limit = (0 < limit) ? limit : 0;
 
+var db = parseInt(program.db);
+db = (0 <= db && db <= 16) ? db : 0;
+
 // refresh
 if (program.refresh) {
     require('../lib/refresh')(program.path, program.key, limit);
 }
 
 // observe
-require('../lib/observe')(program.path, program.key, limit);
+require('../lib/observe')(program.path, db, program.key, limit);
 
 console.log('Start observing.');
 console.log('path:  ' + program.path);
+console.log('db: ' + db);
 console.log('key:   ' + program.key);
 console.log('limit: ' + (limit || 'no limit'));
+
